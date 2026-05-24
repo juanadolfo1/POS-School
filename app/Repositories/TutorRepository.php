@@ -5,8 +5,29 @@ namespace App\Repositories;
 use App\Interfaces\TutorRepositoryInterface;
 use App\Models\Person;
 use App\Models\StudentTutor;
+use Illuminate\Support\Facades\DB;
 
 class TutorRepository implements TutorRepositoryInterface{
+
+    public function get_all_tutors(): array{
+        return StudentTutor::join('people', 'student_tutors.person_id', '=', 'people.id')
+            ->join('students', 'students.id', '=', 'student_tutors.student_id')
+            ->join('people as student_person', 'student_person.id', '=', 'students.person_id')
+            ->select(
+                'student_tutors.id',
+                'student_tutors.status',
+                'student_tutors.relation',
+                'student_tutors.tutor_type',
+                'people.name',
+                'people.first_lastname',
+                'people.second_lastname',
+                'people.email',
+                'student_tutors.student_id',
+                DB::raw("CONCAT_WS(' ', student_person.name, student_person.first_lastname, student_person.second_lastname) as student_name")
+            )
+            ->get()
+            ->toArray();
+    }
 
     public function get_all_tutors_for_student(int $studentId): array{
         $tutors = StudentTutor::join(

@@ -7,6 +7,7 @@ use App\Http\Controllers\api\PaymentController;
 use App\Http\Controllers\api\StudentController;
 use App\Http\Controllers\api\TutorController;
 use App\Http\Controllers\api\QrController;
+use App\Http\Controllers\api\UserController;
 use App\Http\Middleware\JWTValidation;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Http\Request;
@@ -19,6 +20,7 @@ Route::controller(AuthController::class)->group(function(){
     $path = '/auth';
     Route::post($path . '/login', 'login');
     Route::post($path . '/register', 'register');
+    Route::post($path . '/logout', 'logout')->middleware(JWTValidation::class);
     Route::get($path . '/refresh-token', 'refresh_token')->middleware(JWTValidation::class);
     Route::get($path . '/get-modules', 'get_modules')->middleware(JWTValidation::class);
 });
@@ -35,6 +37,7 @@ Route::controller(StudentController::class)->group(function(){
 
 Route::controller(TutorController::class)->group(function(){
     $path = '/tutor';
+    Route::get($path, 'index')->middleware(JWTValidation::class);
     Route::get($path . '/by-student/{studentId}', 'get_all_tutors_for_student')->middleware(JWTValidation::class);
     Route::get($path . '/by-id/{id}', 'get_tutor_by_id')->middleware(JWTValidation::class);
     Route::post($path, 'store_tutor')->middleware(JWTValidation::class);
@@ -87,9 +90,11 @@ Route::controller(CatalogController::class)->group(function(){
 Route::controller(PaymentController::class)->group(function(){
     $paymentPath = '/payments';
     Route::get($paymentPath, 'get_payments_by_student_id')->middleware(JWTValidation::class);
-    Route::post($paymentPath, 'save_payment');//->middleware(JWTValidation::class);
-    Route::post($paymentPath . '/pending-payments', 'get_pending_payments_by_student_id');//->middleware(JWTValidation::class);
-    Route::post($paymentPath . '/service-payments', 'get_all_service_payments_by_academic_level');//->middleware(JWTValidation::class);
+    Route::post($paymentPath, 'save_payment')->middleware(JWTValidation::class);
+    Route::post($paymentPath . '/pending-payments', 'get_pending_payments_by_student_id')->middleware(JWTValidation::class);
+    Route::post($paymentPath . '/service-payments', 'get_all_service_payments_by_academic_level')->middleware(JWTValidation::class);
+    Route::get($paymentPath . '/daily-income', 'daily_income')->middleware(JWTValidation::class);
+    Route::get($paymentPath . '/promotion/check', 'check_promotion')->middleware(JWTValidation::class);
 });
 
 Route::controller(QrController::class)->group(function(){
@@ -102,4 +107,12 @@ Route::controller(DocumentController::class)->group(function(){
     Route::get($documentPath . '/get-ticket/{folioTicket}', 'get_ticket');
     Route::get($documentPath . '/close-ticket/{selectedDay}', 'close_ticket');
     Route::get($documentPath . '/get-pending-payments-report', 'get_pending_payments_report');
+});
+
+Route::controller(UserController::class)->group(function(){
+    Route::get('/users', 'index')->middleware(JWTValidation::class);
+    Route::post('/users', 'store')->middleware(JWTValidation::class);
+    Route::put('/users', 'update')->middleware(JWTValidation::class);
+    Route::delete('/users/{id}', 'delete')->middleware(JWTValidation::class);
+    Route::get('/roles', 'get_roles')->middleware(JWTValidation::class);
 });

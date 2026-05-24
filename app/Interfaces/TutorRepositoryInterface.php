@@ -5,6 +5,7 @@ namespace App\Interfaces;
 use App\Models\StudentTutor;
 
 interface TutorRepositoryInterface{
+    function get_all_tutors(): array;
     /**
      * @return StudentTutor[]
      */

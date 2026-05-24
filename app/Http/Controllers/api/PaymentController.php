@@ -7,6 +7,7 @@ use App\Interfaces\PaymentRepositoryInterface;
 use App\Models\ApiResponse;
 use App\Models\CustomException;
 use App\Models\Dto\CheckoutDTO;
+use App\Services\PromotionService;
 use DateTime;
 use Exception;
 use Illuminate\Http\Request;
@@ -15,9 +16,11 @@ use Illuminate\Support\Facades\DB;
 class PaymentController extends Controller
 {
     protected PaymentRepositoryInterface $repository;
+    protected PromotionService $promotionService;
 
-    public function __construct(PaymentRepositoryInterface $paymentRepository){
+    public function __construct(PaymentRepositoryInterface $paymentRepository, PromotionService $promotionService){
         $this->repository = $paymentRepository;
+        $this->promotionService = $promotionService;
     }
 
     public function get_payments_by_student_id(Request $request){
@@ -63,12 +66,15 @@ class PaymentController extends Controller
             $currentMonth = (int) (new DateTime())->format('n');
             $firstPaymentMonth = (int) (new DateTime($payments[0]->last_day_with_discount))->format('n');
 
+            $isEligibleForPromotion = $this->promotionService->isEligibleForDiscount($studentId, $yearId, $academicLevelId);
+
             return response()
                     ->json(ApiResponse::success('Pending payments retrieved successfully', [
                         'payments' => $payments,
                         'paymentMethods' => $paymentMethods,
                         'scholarship' => $scholarship,
-                        'is_up_to_date' => $firstPaymentMonth >= $currentMonth
+                        'is_up_to_date' => $firstPaymentMonth >= $currentMonth,
+                        'promotion_eligible' => $isEligibleForPromotion
                     ]))
                     ->setStatusCode(200);
         } catch (Exception $e) {
@@ -120,4 +126,69 @@ class PaymentController extends Controller
         }
     }
 
+    public function daily_income(Request $request){
+        $date = $request->query('date', now()->toDateString());
+
+        try {
+            $byLevel = DB::table('payments')
+                ->join('ticket_products', 'payments.ticket_product_id', '=', 'ticket_products.id')
+                ->join('tickets', 'ticket_products.ticket_id', '=', 'tickets.id')
+                ->join('student_groups', 'tickets.student_group_id', '=', 'student_groups.id')
+                ->join('groups', 'student_groups.group_id', '=', 'groups.id')
+                ->join('cat_academic_levels', 'groups.academic_level_id', '=', 'cat_academic_levels.id')
+                ->where('payments.paid_at', $date)
+                ->whereNull('payments.deleted_at')
+                ->whereNull('ticket_products.deleted_at')
+                ->whereNull('tickets.deleted_at')
+                ->groupBy('cat_academic_levels.id', 'cat_academic_levels.label')
+                ->select(
+                    'cat_academic_levels.id as academic_level_id',
+                    'cat_academic_levels.label as academic_level_name',
+                    DB::raw('SUM(payments.paid_amount) as total_income'),
+                    DB::raw('COUNT(DISTINCT student_groups.student_id) as total_students_paid'),
+                    DB::raw("COUNT(DISTINCT CASE WHEN tickets.has_discount = true AND tickets.discount_type = 'early_payment' THEN student_groups.student_id END) as promotion_eligible_count")
+                )
+                ->get()
+                ->map(function ($row) {
+                    return [
+                        'academic_level_id' => (int) $row->academic_level_id,
+                        'academic_level_name' => $row->academic_level_name,
+                        'total_income' => round((float) $row->total_income, 2),
+                        'total_students_paid' => (int) $row->total_students_paid,
+                        'promotion_eligible_count' => (int) $row->promotion_eligible_count,
+                    ];
+                });
+
+            $data = [
+                'date' => $date,
+                'total_income' => round($byLevel->sum('total_income'), 2),
+                'total_transactions' => DB::table('payments')->where('paid_at', $date)->whereNull('deleted_at')->count(),
+                'promotion_eligible_total' => $byLevel->sum('promotion_eligible_count'),
+                'by_level' => $byLevel->values()->toArray(),
+            ];
+
+            return response()->json(['status' => 'success', 'message' => 'ok', 'data' => $data], 200);
+        } catch (Exception $e) {
+            return response()
+                ->json(ApiResponse::internalError('Failed to retrieve daily income', [$e->getMessage()]))
+                ->setStatusCode(500);
+        }
+    }
+
+    public function check_promotion(Request $request){
+        $studentId = (int) $request->query('student_id');
+        $scholarYearId = (int) $request->query('scholar_year_id');
+        $academicLevelId = (int) $request->query('academic_level_id');
+
+        try {
+            $eligible = $this->promotionService->isEligibleForDiscount($studentId, $scholarYearId, $academicLevelId);
+            return response()
+                    ->json(ApiResponse::success('Promotion status retrieved', ['eligible' => $eligible]))
+                    ->setStatusCode(200);
+        } catch (Exception $e) {
+            return response()
+                    ->json(ApiResponse::internalError('Failed to check promotion', [$e->getMessage()]))
+                    ->setStatusCode(500);
+        }
+    }
 }

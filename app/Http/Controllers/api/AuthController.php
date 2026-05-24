@@ -20,7 +20,12 @@ class AuthController extends Controller
 
     public function login(Request $request)
     {
-        Log::info('Login request received ' . $request->email);
+        Log::info('Login request', [
+            'method' => $request->method(),
+            'url' => $request->fullUrl(),
+            'headers' => $request->headers->all(),
+            'body' => $request->all(),
+        ]);
         try {
             $user = $this->authRepository->login($request);
 
@@ -103,6 +108,21 @@ class AuthController extends Controller
                     ->setStatusCode(500);
         }
 
+    }
+
+    public function logout(Request $request){
+        $jwt = $request->bearerToken();
+        try {
+            $this->authRepository->invalidate_jwt_token($jwt);
+            return response()
+                    ->json(ApiResponse::success('Logged out successfully', []))
+                    ->setStatusCode(200);
+        } catch(Exception $e) {
+            Log::error('Error logging out: ' . $e->getTraceAsString());
+            return response()
+                    ->json(ApiResponse::internalError('Failed to logout', [$e->getMessage()]))
+                    ->setStatusCode(500);
+        }
     }
 
     public function get_modules(Request $request){

@@ -4,7 +4,7 @@ namespace App\Http\Controllers\api;
 
 use App\Http\Controllers\Controller;
 use App\Models\ApiResponse;
-use App\Repositories\TutorRepositoryInterface;
+use App\Interfaces\TutorRepositoryInterface;
 use Exception;
 use Illuminate\Http\Request;
 
@@ -14,6 +14,27 @@ class TutorController extends Controller
 
     public function __construct(TutorRepositoryInterface $tutorRepository) {
         $this->tutorRepository = $tutorRepository;
+    }
+
+    public function index()
+    {
+        try {
+            $tutors = $this->tutorRepository->get_all_tutors();
+
+            if(count($tutors) == 0){
+                return response()
+                        ->json(ApiResponse::notFound('Tutors not found', $tutors))
+                        ->setStatusCode(404);
+            }
+
+            return response()
+                    ->json(ApiResponse::success('Tutors retrieved successfully', $tutors))
+                    ->setStatusCode(200);
+        } catch (Exception $e) {
+            return response()
+                    ->json(ApiResponse::internalError('Failed to retrieve tutors', [$e->getMessage()]))
+                    ->setStatusCode(500);
+        }
     }
 
     public function get_all_tutors_for_student(int $studentId)

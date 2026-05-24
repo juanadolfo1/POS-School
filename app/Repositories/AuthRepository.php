@@ -81,7 +81,10 @@ class AuthRepository implements AuthRepositoryInterface{
     }
 
     public function logout(string $email): void{
-
+        $user = User::where('email', '=', $email)->first();
+        if($user){
+            SessionToken::where('user_id', '=', $user->id)->delete();
+        }
     }
 
     public function is_already_logged(int $userId): bool
