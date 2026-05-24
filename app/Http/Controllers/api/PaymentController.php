@@ -127,7 +127,8 @@ class PaymentController extends Controller
     }
 
     public function daily_income(Request $request){
-        $date = $request->query('date', now()->toDateString());
+        $startDate = $request->query('start_date', now()->toDateString());
+        $endDate = $request->query('end_date', now()->toDateString());
 
         try {
             $byLevel = DB::table('payments')
@@ -136,7 +137,7 @@ class PaymentController extends Controller
                 ->join('student_groups', 'tickets.student_group_id', '=', 'student_groups.id')
                 ->join('groups', 'student_groups.group_id', '=', 'groups.id')
                 ->join('cat_academic_levels', 'groups.academic_level_id', '=', 'cat_academic_levels.id')
-                ->where('payments.paid_at', $date)
+                ->whereBetween('payments.paid_at', [$startDate, $endDate])
                 ->whereNull('payments.deleted_at')
                 ->whereNull('ticket_products.deleted_at')
                 ->whereNull('tickets.deleted_at')
@@ -160,9 +161,10 @@ class PaymentController extends Controller
                 });
 
             $data = [
-                'date' => $date,
+                'start_date' => $startDate,
+                'end_date' => $endDate,
                 'total_income' => round($byLevel->sum('total_income'), 2),
-                'total_transactions' => DB::table('payments')->where('paid_at', $date)->whereNull('deleted_at')->count(),
+                'total_transactions' => DB::table('payments')->whereBetween('paid_at', [$startDate, $endDate])->whereNull('deleted_at')->count(),
                 'promotion_eligible_total' => $byLevel->sum('promotion_eligible_count'),
                 'by_level' => $byLevel->values()->toArray(),
             ];
