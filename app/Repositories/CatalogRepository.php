@@ -126,10 +126,12 @@ class CatalogRepository implements CatalogRepositoryInterface{
         return $scholarYears;
     }
 
-    public function create_scholar_year(string $year): ScholarYear
+    public function create_scholar_year($data): ScholarYear
     {
         $newSchoolarYear = new ScholarYear();
-        $newSchoolarYear->year = $year;
+        $newSchoolarYear->year = $data->year;
+        $newSchoolarYear->starts_at = $data->starts_at;
+        $newSchoolarYear->ends_at = $data->ends_at;
         $newSchoolarYear->status = 1;
         $newSchoolarYear->save();
 

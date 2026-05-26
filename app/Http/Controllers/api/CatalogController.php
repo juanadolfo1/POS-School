@@ -44,9 +44,9 @@ class CatalogController extends Controller
 
     public function create_scholar_year(Request $request)
     {
-        $year = $request->year;
+        $data = $request;
         try {
-            $scholarYear = $this->catalogRepository->create_scholar_year($year);
+            $scholarYear = $this->catalogRepository->create_scholar_year($data);
 
             return response()
                     ->json(ApiResponse::success('Schoolar year created successfully', $scholarYear))

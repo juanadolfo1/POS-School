@@ -4,6 +4,7 @@ use App\Http\Controllers\api\AuthController;
 use App\Http\Controllers\api\CatalogController;
 use App\Http\Controllers\api\DocumentController;
 use App\Http\Controllers\api\PaymentController;
+use App\Http\Controllers\api\ScholarshipController;
 use App\Http\Controllers\api\StudentController;
 use App\Http\Controllers\api\TutorController;
 use App\Http\Controllers\api\QrController;
@@ -115,4 +116,12 @@ Route::controller(UserController::class)->group(function(){
     Route::put('/users', 'update')->middleware(JWTValidation::class);
     Route::delete('/users/{id}', 'delete')->middleware(JWTValidation::class);
     Route::get('/roles', 'get_roles')->middleware(JWTValidation::class);
+});
+
+Route::controller(ScholarshipController::class)->group(function(){
+    $path = '/scholarships';
+    Route::get($path, 'index')->middleware(JWTValidation::class);
+    Route::post($path, 'store')->middleware(JWTValidation::class);
+    Route::put($path, 'update')->middleware(JWTValidation::class);
+    Route::delete($path . '/{id}', 'delete')->middleware(JWTValidation::class);
 });
