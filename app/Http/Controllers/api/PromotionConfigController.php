@@ -5,7 +5,6 @@ namespace App\Http\Controllers\api;
 use App\Http\Controllers\Controller;
 use App\Models\ApiResponse;
 use App\Models\PromotionConfig;
-use App\Models\PromotionConfigOverride;
 use Illuminate\Http\Request;
 
 class PromotionConfigController extends Controller
@@ -21,7 +20,7 @@ class PromotionConfigController extends Controller
             $query->where('scholar_year_id', $scholarYearId);
         }
 
-        return ApiResponse::success($query->get());
+        return response()->json(ApiResponse::success('Promotion configs retrieved', $query->get()));
     }
 
     public function store(Request $request)
@@ -45,7 +44,7 @@ class PromotionConfigController extends Controller
             }
         }
 
-        return ApiResponse::success($config->load('overrides'));
+        return response()->json(ApiResponse::success('Promotion config created', $config->load('overrides')));
     }
 
     public function update(Request $request)
@@ -61,7 +60,6 @@ class PromotionConfigController extends Controller
         $config = PromotionConfig::findOrFail($request->id);
         $config->update(['default_day' => $request->default_day]);
 
-        // Reemplazar overrides
         $config->overrides()->delete();
         if ($request->has('overrides')) {
             foreach ($request->overrides as $override) {
@@ -69,7 +67,7 @@ class PromotionConfigController extends Controller
             }
         }
 
-        return ApiResponse::success($config->load('overrides'));
+        return response()->json(ApiResponse::success('Promotion config updated', $config->load('overrides')));
     }
 
     public function delete($id)
@@ -77,6 +75,6 @@ class PromotionConfigController extends Controller
         $config = PromotionConfig::findOrFail($id);
         $config->delete();
 
-        return ApiResponse::success(null);
+        return response()->json(ApiResponse::success('Promotion config deleted', []));
     }
 }
