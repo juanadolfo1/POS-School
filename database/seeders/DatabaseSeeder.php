@@ -20,12 +20,18 @@ class DatabaseSeeder extends Seeder
 
         // ========== MODULES ==========
         DB::table('modules')->insert([
-            ['id' => 1, 'module_name' => 'Alumnos',      'path' => 'dashboards/students',   'icon' => 'pi pi-users',        'order' => 1, 'status' => 1, 'created_at' => now(), 'updated_at' => now()],
-            ['id' => 2, 'module_name' => 'Tutores',      'path' => 'dashboards/tutors',     'icon' => 'pi pi-id-card',      'order' => 2, 'status' => 1, 'created_at' => now(), 'updated_at' => now()],
-            ['id' => 3, 'module_name' => 'Pagos',        'path' => 'dashboards/payments',   'icon' => 'pi pi-credit-card',  'order' => 3, 'status' => 1, 'created_at' => now(), 'updated_at' => now()],
-            ['id' => 4, 'module_name' => 'Documentos',   'path' => 'dashboards/documents',  'icon' => 'pi pi-file',         'order' => 4, 'status' => 1, 'created_at' => now(), 'updated_at' => now()],
-            ['id' => 5, 'module_name' => 'Cat\u00e1logos',    'path' => 'dashboards/catalogs',   'icon' => 'pi pi-cog',          'order' => 5, 'status' => 1, 'created_at' => now(), 'updated_at' => now()],
-            ['id' => 6, 'module_name' => 'Usuarios',     'path' => 'dashboards/users',      'icon' => 'pi pi-user-edit',    'order' => 6, 'status' => 1, 'created_at' => now(), 'updated_at' => now()],
+            ['id' => 1,  'module_name' => 'Alumnos',        'path' => 'dashboards/students',      'icon' => 'pi pi-users',        'order' => 1,  'status' => 1, 'created_at' => now(), 'updated_at' => now()],
+            ['id' => 2,  'module_name' => 'Tutores',        'path' => 'dashboards/tutors',        'icon' => 'pi pi-id-card',      'order' => 2,  'status' => 1, 'created_at' => now(), 'updated_at' => now()],
+            ['id' => 3,  'module_name' => 'Pagos',          'path' => 'dashboards/payments',      'icon' => 'pi pi-credit-card',  'order' => 3,  'status' => 1, 'created_at' => now(), 'updated_at' => now()],
+            ['id' => 4,  'module_name' => 'Documentos',     'path' => 'dashboards/documents',     'icon' => 'pi pi-file',         'order' => 4,  'status' => 1, 'created_at' => now(), 'updated_at' => now()],
+            ['id' => 5,  'module_name' => 'Cat\u00e1logos', 'path' => 'dashboards/catalogs',      'icon' => 'pi pi-cog',          'order' => 5,  'status' => 1, 'created_at' => now(), 'updated_at' => now()],
+            ['id' => 6,  'module_name' => 'Usuarios',       'path' => 'dashboards/users',         'icon' => 'pi pi-user-edit',    'order' => 6,  'status' => 1, 'created_at' => now(), 'updated_at' => now()],
+            ['id' => 7,  'module_name' => 'Becas',          'path' => 'dashboards/scholarships',  'icon' => 'pi pi-star',         'order' => 7,  'status' => 1, 'created_at' => now(), 'updated_at' => now()],
+            ['id' => 8,  'module_name' => 'Pronto Pago',    'path' => 'dashboards/promotion-config', 'icon' => 'pi pi-percentage', 'order' => 8,  'status' => 1, 'created_at' => now(), 'updated_at' => now()],
+            ['id' => 9,  'module_name' => 'Bajas',          'path' => 'dashboards/withdrawals',   'icon' => 'pi pi-user-minus',   'order' => 9,  'status' => 1, 'created_at' => now(), 'updated_at' => now()],
+            ['id' => 10, 'module_name' => 'Reinscripci\u00f3n', 'path' => 'dashboards/enrollment', 'icon' => 'pi pi-refresh',    'order' => 10, 'status' => 1, 'created_at' => now(), 'updated_at' => now()],
+            ['id' => 11, 'module_name' => 'Dashboard',      'path' => 'dashboards/home',          'icon' => 'pi pi-chart-bar',    'order' => 0,  'status' => 1, 'created_at' => now(), 'updated_at' => now()],
+            ['id' => 12, 'module_name' => 'Resumen de pagos','path' => 'dashboards/daily-income',  'icon' => 'pi pi-money-bill',   'order' => 4,  'status' => 1, 'created_at' => now(), 'updated_at' => now()],
         ]);
 
         // ========== OPERATIONS ==========
@@ -55,37 +61,43 @@ class DatabaseSeeder extends Seeder
             ['id' => 17, 'operation_name' => 'Ver',      'module_id' => 6, 'created_at' => now(), 'updated_at' => now()],
             ['id' => 18, 'operation_name' => 'Crear',    'module_id' => 6, 'created_at' => now(), 'updated_at' => now()],
             ['id' => 19, 'operation_name' => 'Editar',   'module_id' => 6, 'created_at' => now(), 'updated_at' => now()],
+            // Becas (module 7)
+            ['id' => 20, 'operation_name' => 'Ver',      'module_id' => 7, 'created_at' => now(), 'updated_at' => now()],
+            ['id' => 21, 'operation_name' => 'Crear',    'module_id' => 7, 'created_at' => now(), 'updated_at' => now()],
+            ['id' => 22, 'operation_name' => 'Editar',   'module_id' => 7, 'created_at' => now(), 'updated_at' => now()],
+            ['id' => 23, 'operation_name' => 'Eliminar', 'module_id' => 7, 'created_at' => now(), 'updated_at' => now()],
+            // Pronto Pago (module 8)
+            ['id' => 24, 'operation_name' => 'Ver',      'module_id' => 8, 'created_at' => now(), 'updated_at' => now()],
+            ['id' => 25, 'operation_name' => 'Crear',    'module_id' => 8, 'created_at' => now(), 'updated_at' => now()],
+            ['id' => 26, 'operation_name' => 'Editar',   'module_id' => 8, 'created_at' => now(), 'updated_at' => now()],
+            ['id' => 27, 'operation_name' => 'Eliminar', 'module_id' => 8, 'created_at' => now(), 'updated_at' => now()],
+            // Bajas (module 9)
+            ['id' => 28, 'operation_name' => 'Ver',      'module_id' => 9, 'created_at' => now(), 'updated_at' => now()],
+            ['id' => 29, 'operation_name' => 'Crear',    'module_id' => 9, 'created_at' => now(), 'updated_at' => now()],
+            ['id' => 30, 'operation_name' => 'Reactivar','module_id' => 9, 'created_at' => now(), 'updated_at' => now()],
+            // Reinscripción (module 10)
+            ['id' => 31, 'operation_name' => 'Ver',              'module_id' => 10, 'created_at' => now(), 'updated_at' => now()],
+            ['id' => 32, 'operation_name' => 'Ejecutar',         'module_id' => 10, 'created_at' => now(), 'updated_at' => now()],
+            ['id' => 33, 'operation_name' => 'Configurar Grados','module_id' => 10, 'created_at' => now(), 'updated_at' => now()],
+            // Dashboard (module 11)
+            ['id' => 34, 'operation_name' => 'Ver',      'module_id' => 11, 'created_at' => now(), 'updated_at' => now()],
+            // Resumen de pagos (module 12)
+            ['id' => 35, 'operation_name' => 'Ver',      'module_id' => 12, 'created_at' => now(), 'updated_at' => now()],
         ]);
 
         // ========== ROLE_OPERATIONS ==========
         // Administrador → TODO
-        DB::table('role_operations')->insert([
-            ['role_id' => 1, 'operation_id' => 1,  'created_at' => now(), 'updated_at' => now()],
-            ['role_id' => 1, 'operation_id' => 2,  'created_at' => now(), 'updated_at' => now()],
-            ['role_id' => 1, 'operation_id' => 3,  'created_at' => now(), 'updated_at' => now()],
-            ['role_id' => 1, 'operation_id' => 4,  'created_at' => now(), 'updated_at' => now()],
-            ['role_id' => 1, 'operation_id' => 5,  'created_at' => now(), 'updated_at' => now()],
-            ['role_id' => 1, 'operation_id' => 6,  'created_at' => now(), 'updated_at' => now()],
-            ['role_id' => 1, 'operation_id' => 7,  'created_at' => now(), 'updated_at' => now()],
-            ['role_id' => 1, 'operation_id' => 8,  'created_at' => now(), 'updated_at' => now()],
-            ['role_id' => 1, 'operation_id' => 9,  'created_at' => now(), 'updated_at' => now()],
-            ['role_id' => 1, 'operation_id' => 10, 'created_at' => now(), 'updated_at' => now()],
-            ['role_id' => 1, 'operation_id' => 11, 'created_at' => now(), 'updated_at' => now()],
-            ['role_id' => 1, 'operation_id' => 12, 'created_at' => now(), 'updated_at' => now()],
-            ['role_id' => 1, 'operation_id' => 13, 'created_at' => now(), 'updated_at' => now()],
-            ['role_id' => 1, 'operation_id' => 14, 'created_at' => now(), 'updated_at' => now()],
-            ['role_id' => 1, 'operation_id' => 15, 'created_at' => now(), 'updated_at' => now()],
-            ['role_id' => 1, 'operation_id' => 16, 'created_at' => now(), 'updated_at' => now()],
-            ['role_id' => 1, 'operation_id' => 17, 'created_at' => now(), 'updated_at' => now()],
-            ['role_id' => 1, 'operation_id' => 18, 'created_at' => now(), 'updated_at' => now()],
-            ['role_id' => 1, 'operation_id' => 19, 'created_at' => now(), 'updated_at' => now()],
-        ]);
-        // Cajero → Solo Pagos (ver + cobrar) y Documentos (ver + generar ticket)
+        $adminOps = range(1, 35);
+        foreach ($adminOps as $opId) {
+            DB::table('role_operations')->insert(['role_id' => 1, 'operation_id' => $opId, 'created_at' => now(), 'updated_at' => now()]);
+        }
+        // Cajero → Solo Pagos (ver + cobrar), Documentos (ver + generar ticket) y Resumen de pagos
         DB::table('role_operations')->insert([
             ['role_id' => 2, 'operation_id' => 9,  'created_at' => now(), 'updated_at' => now()],
             ['role_id' => 2, 'operation_id' => 10, 'created_at' => now(), 'updated_at' => now()],
             ['role_id' => 2, 'operation_id' => 11, 'created_at' => now(), 'updated_at' => now()],
             ['role_id' => 2, 'operation_id' => 12, 'created_at' => now(), 'updated_at' => now()],
+            ['role_id' => 2, 'operation_id' => 35, 'created_at' => now(), 'updated_at' => now()],
         ]);
         // Secretaria → Alumnos (ver, crear, editar), Tutores (ver, crear, editar), Pagos (ver), Documentos (ver, generar)
         DB::table('role_operations')->insert([

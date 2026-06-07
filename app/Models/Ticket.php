@@ -16,7 +16,11 @@ class Ticket extends Model
         'discount_amount',
         'folio_ticket',
         'payment_method_id',
-        'student_group_id'
+        'student_group_id',
+        'is_cancelled',
+        'cancel_reason',
+        'cancelled_at',
+        'cancelled_by',
     ];
 
     use HasFactory, SoftDeletes;

@@ -27,27 +27,35 @@ class WithdrawalService
             throw new CustomException('El alumno ya tiene una baja activa en este ciclo escolar', 409);
         }
 
-        // Desactivar student_groups del ciclo actual
-        $affectedGroups = StudentGroup::join('groups', 'groups.id', '=', 'student_groups.group_id')
-            ->where([
-                ['student_groups.student_id', '=', $studentId],
-                ['groups.scholar_year_id', '=', $scholarYearId],
-                ['student_groups.status', '=', 1],
-            ])
-            ->select('student_groups.id')
-            ->get();
+        DB::beginTransaction();
+        try {
+            // Desactivar student_groups del ciclo actual
+            $affectedGroups = StudentGroup::join('groups', 'groups.id', '=', 'student_groups.group_id')
+                ->where([
+                    ['student_groups.student_id', '=', $studentId],
+                    ['groups.scholar_year_id', '=', $scholarYearId],
+                    ['student_groups.status', '=', 1],
+                ])
+                ->select('student_groups.id')
+                ->get();
 
-        StudentGroup::whereIn('id', $affectedGroups->pluck('id'))->update(['status' => 0]);
+            StudentGroup::whereIn('id', $affectedGroups->pluck('id'))->update(['status' => 0]);
 
-        // Registrar la baja
-        return StudentWithdrawal::create([
-            'student_id' => $studentId,
-            'scholar_year_id' => $scholarYearId,
-            'type' => $type,
-            'reason' => $reason,
-            'effective_date' => $effectiveDate,
-            'status' => 1,
-        ]);
+            $withdrawal = StudentWithdrawal::create([
+                'student_id' => $studentId,
+                'scholar_year_id' => $scholarYearId,
+                'type' => $type,
+                'reason' => $reason,
+                'effective_date' => $effectiveDate,
+                'status' => 1,
+            ]);
+
+            DB::commit();
+            return $withdrawal;
+        } catch (\Exception $e) {
+            DB::rollBack();
+            throw $e;
+        }
     }
 
     /**

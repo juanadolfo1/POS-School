@@ -32,10 +32,23 @@ class EnrollmentService
      */
     public function promoteBatch(int $fromScholarYearId, int $toScholarYearId, int $academicLevelId): array
     {
-        // Validar que el ciclo destino exista y sea diferente
         if ($fromScholarYearId === $toScholarYearId) {
             throw new CustomException('El ciclo origen y destino no pueden ser el mismo', 422);
         }
+
+        DB::beginTransaction();
+        try {
+            $result = $this->executePromoteBatch($fromScholarYearId, $toScholarYearId, $academicLevelId);
+            DB::commit();
+            return $result;
+        } catch (\Exception $e) {
+            DB::rollBack();
+            throw $e;
+        }
+    }
+
+    private function executePromoteBatch(int $fromScholarYearId, int $toScholarYearId, int $academicLevelId): array
+    {
 
         // Validar que no se haya ejecutado ya este proceso
         $existingProcess = EnrollmentProcess::where([
@@ -126,7 +139,6 @@ class EnrollmentService
             }
         }
 
-        // Registrar el proceso
         $process = EnrollmentProcess::create([
             'from_scholar_year_id' => $fromScholarYearId,
             'to_scholar_year_id' => $toScholarYearId,

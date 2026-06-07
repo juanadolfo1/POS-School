@@ -48,6 +48,12 @@ class PaymentController extends Controller
     }
 
     public function get_pending_payments_by_student_id(Request $request){
+        $request->validate([
+            'student_id' => 'required|integer',
+            'year_id' => 'required|integer',
+            'academic_level_id' => 'required|integer',
+        ]);
+
         $studentId = (int) $request->student_id;
         $yearId = (int) $request->year_id;
         $academicLevelId = (int) $request->academic_level_id;
@@ -85,6 +91,11 @@ class PaymentController extends Controller
     }
 
     public function get_all_service_payments_by_academic_level(Request $request){
+        $request->validate([
+            'year_id' => 'required|integer',
+            'academic_level_id' => 'required|integer',
+        ]);
+
         $yearId = (int) $request->year_id;
         $academicLevelId = (int) $request->academic_level_id;
         try{

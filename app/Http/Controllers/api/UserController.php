@@ -36,6 +36,13 @@ class UserController extends Controller
 
     public function store(Request $request)
     {
+        $request->validate([
+            'name' => 'required|string|max:128',
+            'email' => 'required|email|unique:users,email|max:128',
+            'password' => 'required|string|min:8|max:64',
+            'role_id' => 'required|exists:roles,id',
+        ]);
+
         try {
             $user = new User();
             $user->name = $request->name;
@@ -57,6 +64,14 @@ class UserController extends Controller
 
     public function update(Request $request)
     {
+        $request->validate([
+            'id' => 'required|exists:users,id',
+            'name' => 'nullable|string|max:128',
+            'email' => 'nullable|email|max:128',
+            'password' => 'nullable|string|min:8|max:64',
+            'role_id' => 'nullable|exists:roles,id',
+        ]);
+
         try {
             $user = User::find($request->id);
             if (!$user) {

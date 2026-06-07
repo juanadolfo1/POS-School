@@ -56,6 +56,13 @@ class ScholarshipController extends Controller
 
     public function store(Request $request)
     {
+        $request->validate([
+            'name' => 'required|string|max:100',
+            'amount' => 'required|numeric|min:0|max:100',
+            'student_id' => 'required|exists:students,id',
+            'scholar_year_id' => 'required|exists:scholar_years,id',
+        ]);
+
         try {
             $scholarship = new Scholarship();
             $scholarship->name = $request->name;
@@ -78,6 +85,15 @@ class ScholarshipController extends Controller
 
     public function update(Request $request)
     {
+        $request->validate([
+            'id' => 'required|exists:scholarships,id',
+            'name' => 'nullable|string|max:100',
+            'amount' => 'nullable|numeric|min:0|max:100',
+            'student_id' => 'nullable|exists:students,id',
+            'scholar_year_id' => 'nullable|exists:scholar_years,id',
+            'status' => 'nullable|integer|in:0,1',
+        ]);
+
         try {
             $scholarship = Scholarship::find($request->id);
             if (!$scholarship) {

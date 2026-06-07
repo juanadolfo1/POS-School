@@ -240,7 +240,9 @@ class PaymentRepository implements PaymentRepositoryInterface
             ->where([
                 ['cat_folios.key', '=', $key],
                 ['scholar_year_id', '=', $scholarYearId]
-            ])->first();
+            ])
+            ->lockForUpdate()
+            ->first();
 
         if ($currentTicketFolio == null) {
             $currentTicketFolio = new CatFolios();
