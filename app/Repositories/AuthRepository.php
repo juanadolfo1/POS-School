@@ -99,7 +99,6 @@ class AuthRepository implements AuthRepositoryInterface{
 
     public function generate_jwt_token($user): string
     {
-
         $now = time();
         $expiration_time = $now + $this->validTime;
 
@@ -108,10 +107,14 @@ class AuthRepository implements AuthRepositoryInterface{
             'typ' => 'JWT'
         ]);
 
+        // Generar hash de permisos para validación cruzada en frontend
+        $permissionsHash = $this->generatePermissionsHash($user->role_id);
+
         $payload = json_encode([
             'sub' => $user->id,
             'iat' => $now,
-            'exp' => $expiration_time
+            'exp' => $expiration_time,
+            'permissions_hash' => $permissionsHash
         ]);
 
         $header = $this->base64URLEncode($header);
@@ -129,6 +132,21 @@ class AuthRepository implements AuthRepositoryInterface{
         $sessionToken->save();
 
         return $jwt;
+    }
+
+    private function generatePermissionsHash(int $roleId): string
+    {
+        $permissions = DB::table('role_operations as ro')
+            ->join('operations as op', 'op.id', '=', 'ro.operation_id')
+            ->join('modules as m', 'm.id', '=', 'op.module_id')
+            ->where('ro.role_id', $roleId)
+            ->orderBy('m.id')
+            ->orderBy('op.id')
+            ->select('m.module_name', 'op.operation_name')
+            ->get()
+            ->toJson();
+
+        return hash('sha256', $permissions);
     }
 
     public function validate_expiration(string $token): bool

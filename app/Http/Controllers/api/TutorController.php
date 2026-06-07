@@ -80,6 +80,16 @@ class TutorController extends Controller
     }
 
     public function store_tutor(Request $request){
+        $request->validate([
+            'name' => 'required|string|max:128',
+            'first_lastname' => 'required|string|max:64',
+            'second_lastname' => 'nullable|string|max:64',
+            'email' => 'nullable|email|max:128',
+            'relation' => 'required|string|max:32',
+            'tutor_type' => 'required|in:P,M,O',
+            'student_id' => 'required|exists:students,id',
+        ]);
+
         $tutorData = $request;
         try {
             $tutor = $this->tutorRepository->store_tutor($tutorData);
@@ -95,6 +105,14 @@ class TutorController extends Controller
     }
 
     public function update_tutor(Request $request){
+        $request->validate([
+            'id' => 'required|exists:student_tutors,id',
+            'relation' => 'required|string|max:32',
+            'tutor_type' => 'required|in:P,M,O',
+            'student_id' => 'required|exists:students,id',
+            'status' => 'required|integer',
+        ]);
+
         $tutorData = $request;
         try {
             $tutor = $this->tutorRepository->update_tutor($tutorData);

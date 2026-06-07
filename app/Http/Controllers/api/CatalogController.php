@@ -5,6 +5,8 @@ namespace App\Http\Controllers\api;
 use App\Http\Controllers\Controller;
 use App\Interfaces\CatalogRepositoryInterface;
 use App\Models\ApiResponse;
+use App\Models\CustomException;
+use App\Services\PayConceptCloneService;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -12,9 +14,11 @@ use Illuminate\Support\Facades\Log;
 class CatalogController extends Controller
 {
     protected $catalogRepository;
+    protected PayConceptCloneService $cloneService;
 
-    public function __construct(CatalogRepositoryInterface $catalogRepository){
+    public function __construct(CatalogRepositoryInterface $catalogRepository, PayConceptCloneService $cloneService){
         $this->catalogRepository = $catalogRepository;
+        $this->cloneService = $cloneService;
     }
 
     /**
@@ -376,6 +380,38 @@ class CatalogController extends Controller
             return response()
                     ->json(ApiResponse::internalError('Failed to create pay concept price', [$e->getMessage()]))
                     ->setStatusCode(500);
+        }
+    }
+
+    public function clone_pay_concepts(Request $request)
+    {
+        $request->validate([
+            'from_scholar_year_id' => 'required|exists:scholar_years,id',
+            'to_scholar_year_id' => 'required|exists:scholar_years,id',
+            'academic_level_id' => 'required|exists:cat_academic_levels,id',
+            'increase_percent' => 'nullable|numeric|min:0|max:100',
+        ]);
+
+        try {
+            $result = $this->cloneService->clone(
+                $request->from_scholar_year_id,
+                $request->to_scholar_year_id,
+                $request->academic_level_id,
+                $request->increase_percent ?? 0
+            );
+
+            return response()
+                ->json(ApiResponse::success('Pay concepts cloned successfully', $result))
+                ->setStatusCode(201);
+        } catch (CustomException $e) {
+            return response()
+                ->json(ApiResponse::badRequest($e->getMessage(), []))
+                ->setStatusCode($e->getStatusCode());
+        } catch (Exception $e) {
+            Log::error('Error cloning pay concepts: ' . $e->getTraceAsString());
+            return response()
+                ->json(ApiResponse::internalError('Failed to clone pay concepts', [$e->getMessage()]))
+                ->setStatusCode(500);
         }
     }
 

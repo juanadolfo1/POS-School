@@ -4,6 +4,7 @@ namespace App\Http\Middleware;
 
 use App\Interfaces\AuthRepositoryInterface;
 use App\Models\ApiResponse;
+use App\Models\SessionToken;
 use Closure;
 use Exception;
 use Illuminate\Http\Request;
@@ -19,15 +20,9 @@ class JWTValidation
         $this->authRepository = $authRepository;
     }
 
-    /**
-     * Handle an incoming request.
-     *
-     * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
-     */
     public function handle(Request $request, Closure $next): Response
     {
         $token = $request->bearerToken();
-        Log::info('Requested with: Bearer ' . $token);
 
         if(!$token){
             return response()
@@ -42,24 +37,26 @@ class JWTValidation
                 throw new Exception('Token is not valid', 401);
             }
 
+            // Blacklist check: token debe existir en session_tokens
+            $exists = SessionToken::where('token', $token)->exists();
+            if (!$exists) {
+                throw new Exception('Token has been revoked', 401);
+            }
+
             $isValid = $this->authRepository->validate_expiration($token);
-            Log::info('Token is valid: ' . $isValid);
             if(!$isValid){
                 throw new Exception('Token is not valid', 401);
             }
 
             return $next($request);
         } catch (Exception $e) {
-            Log::error('Error validating token: ' . $e->getMessage());
+            Log::error('Auth error: ' . $e->getMessage());
             switch($e->getCode()){
                 case 401:
-                    Log::warning('Unauthorized');
-
                     return response()
                             ->json(ApiResponse::unauthorized($e->getMessage(), []))
                             ->setStatusCode(401);
                 case 426:
-                    Log::warning('Must refresh token');
                     $response = $next($request);
                     $response->headers->set('must-refresh-token', true);
                     return $response;

@@ -10,7 +10,13 @@ class CatPayConcept extends Model
 {
     protected $fillable = [
         'status',
-        'label'
+        'label',
+        'amount',
+        'discount_amount',
+        'last_day_with_discount',
+        'pay_concept_type',
+        'scholar_year_id',
+        'id_cat_academic_level',
     ];
 
     use HasFactory, SoftDeletes;

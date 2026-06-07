@@ -43,6 +43,17 @@ class StudentController extends Controller
     }
 
     public function store(Request $request){
+        $request->validate([
+            'name' => 'required|string|max:128',
+            'first_lastname' => 'required|string|max:64',
+            'second_lastname' => 'nullable|string|max:64',
+            'email' => 'nullable|email|max:128',
+            'gender' => 'required|in:M,F',
+            'birthday' => 'required|date',
+            'curp' => 'required|string|size:18|unique:students,curp',
+            'status' => 'required|integer',
+        ]);
+
         $student = $request;
 
         try{
@@ -62,6 +73,18 @@ class StudentController extends Controller
     }
 
     public function update(Request $request){
+        $request->validate([
+            'id' => 'required|exists:students,id',
+            'name' => 'required|string|max:128',
+            'first_lastname' => 'required|string|max:64',
+            'second_lastname' => 'nullable|string|max:64',
+            'email' => 'nullable|email|max:128',
+            'gender' => 'required|in:M,F',
+            'birthday' => 'required|date',
+            'curp' => 'required|string|size:18',
+            'status' => 'required|integer',
+        ]);
+
         $student = $request;
 
         try{

@@ -14,6 +14,11 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->prepend(\App\Http\Middleware\LogRequests::class);
         $middleware->prepend(\Illuminate\Http\Middleware\HandleCors::class);
+        $middleware->append(\App\Http\Middleware\SanitizeInput::class);
+        $middleware->alias([
+            'permission' => \App\Http\Middleware\PermissionValidation::class,
+            'throttle.login' => \App\Http\Middleware\RateLimitLogin::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //

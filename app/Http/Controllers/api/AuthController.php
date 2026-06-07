@@ -5,32 +5,32 @@ namespace App\Http\Controllers\api;
 use App\Http\Controllers\Controller;
 use App\Interfaces\AuthRepositoryInterface;
 use App\Models\ApiResponse;
+use App\Services\AuditService;
 use Exception;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 
 class AuthController extends Controller
 {
     protected AuthRepositoryInterface $authRepository;
+    protected AuditService $auditService;
 
-    public function __construct(AuthRepositoryInterface $authRepository){
+    public function __construct(AuthRepositoryInterface $authRepository, AuditService $auditService)
+    {
         $this->authRepository = $authRepository;
+        $this->auditService = $auditService;
     }
 
     public function login(Request $request)
     {
-        Log::info('Login request', [
-            'method' => $request->method(),
-            'url' => $request->fullUrl(),
-            'headers' => $request->headers->all(),
-            'body' => $request->all(),
-        ]);
         try {
             $user = $this->authRepository->login($request);
 
             if(!$user){
-                Log::error('User not found ' . $request->email);
+                $this->auditService->log(0, 'LOGIN_FAILED', 'auth', null, [
+                    'email' => $request->email,
+                    'ip' => $request->ip(),
+                ]);
                 return response()
                         ->json(ApiResponse::notFound('User not found', []))
                         ->setStatusCode(404);
@@ -38,7 +38,6 @@ class AuthController extends Controller
 
             $isAlreadyLoggedIn = $this->authRepository->is_already_logged($user->id);
             if($isAlreadyLoggedIn){
-                Log::error('User already logged in ' . $request->email);
                 return response()
                         ->json(ApiResponse::forbidden('User already logged in', []))
                         ->setStatusCode(403);
@@ -50,31 +49,30 @@ class AuthController extends Controller
             $modules = $this->authRepository->get_modules($user->role_id);
             $user->modules = $modules;
 
-            Log::info('User logged in successfully ' . $user->email);
+            $this->auditService->log($user->id, 'LOGIN_SUCCESS', 'auth', null, [
+                'ip' => $request->ip(),
+            ]);
+
             return response()
                     ->json(ApiResponse::success('User logged in successfully', $user))
                     ->setStatusCode(200);
         } catch (Exception $e) {
-            Log::error('Error logging in: ' . $e->getTraceAsString());
+            Log::error('Error logging in: ' . $e->getMessage());
             return response()
                     ->json(ApiResponse::internalError('Failed to login', [$e->getMessage()]))
                     ->setStatusCode(500);
         }
-
     }
 
     public function register(Request $request)
     {
-
-        Log::info('Register request received ' . $request->email);
         try {
             $user = $this->authRepository->register_user($request);
-            Log::info('User registered successfully ' . $user->email);
             return response()
                     ->json(ApiResponse::success('User registered successfully', $user))
                     ->setStatusCode(201);
         } catch (Exception $e) {
-            Log::error('Error registering user: ' . $e->getTraceAsString());
+            Log::error('Error registering user: ' . $e->getMessage());
             return response()
                     ->json(ApiResponse::internalError('Failed to register user', [$e->getMessage()]))
                     ->setStatusCode(500);
@@ -83,12 +81,10 @@ class AuthController extends Controller
 
     public function refresh_token(Request $request)
     {
-        Log::info('Refresh token request received');
         $jwt = $request->bearerToken();
 
         try {
             $this->authRepository->invalidate_jwt_token($jwt);
-
             $refreshed = $this->authRepository->refresh_jwt_token($jwt);
 
             return response()
@@ -96,21 +92,19 @@ class AuthController extends Controller
                     ->setStatusCode(200);
         } catch(Exception $e) {
             if($e->getCode()){
-                Log::error($e->getMessage());
                 return response()
                         ->json(ApiResponse::forbidden($e->getMessage(), []))
                         ->setStatusCode(403);
             }
 
-            Log::error('Error refreshing token in: ' . $e->getTraceAsString());
             return response()
                     ->json(ApiResponse::internalError('Failed to refresh token', [$e->getMessage()]))
                     ->setStatusCode(500);
         }
-
     }
 
-    public function logout(Request $request){
+    public function logout(Request $request)
+    {
         $jwt = $request->bearerToken();
         try {
             $this->authRepository->invalidate_jwt_token($jwt);
@@ -118,24 +112,21 @@ class AuthController extends Controller
                     ->json(ApiResponse::success('Logged out successfully', []))
                     ->setStatusCode(200);
         } catch(Exception $e) {
-            Log::error('Error logging out: ' . $e->getTraceAsString());
             return response()
                     ->json(ApiResponse::internalError('Failed to logout', [$e->getMessage()]))
                     ->setStatusCode(500);
         }
     }
 
-    public function get_modules(Request $request){
-        Log::info('Get modules request received');
+    public function get_modules(Request $request)
+    {
         $jwt = $request->bearerToken();
-        Log::info('Bearer token: ' . $jwt);
         try {
             $modules = $this->authRepository->get_modules_from_jwt($jwt);
             return response()
                     ->json(ApiResponse::success('Modules fetched successfully', $modules))
                     ->setStatusCode(200);
         } catch(Exception $e) {
-            Log::error('Error fetching modules: ' . $e->getTraceAsString());
             return response()
                     ->json(ApiResponse::internalError('Failed to fetch modules', [$e->getMessage()]))
                     ->setStatusCode(500);
