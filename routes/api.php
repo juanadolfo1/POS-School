@@ -14,6 +14,7 @@ use App\Http\Controllers\api\TutorController;
 use App\Http\Controllers\api\QrController;
 use App\Http\Controllers\api\UserController;
 use App\Http\Controllers\api\WithdrawalController;
+use App\Http\Controllers\api\BrandingController;
 use App\Http\Middleware\JWTValidation;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Http\Request;
@@ -147,6 +148,12 @@ Route::controller(WithdrawalController::class)->group(function(){
     Route::get($path, 'index')->middleware(JWTValidation::class);
     Route::post($path, 'store')->middleware([JWTValidation::class, 'permission:Bajas,Crear']);
     Route::put($path . '/reactivate/{id}', 'reactivate')->middleware([JWTValidation::class, 'permission:Bajas,Reactivar']);
+});
+
+Route::controller(BrandingController::class)->group(function(){
+    $path = '/branding';
+    Route::get($path, 'index');
+    Route::post($path, 'update')->middleware([JWTValidation::class, 'permission:Catálogos,Editar']);
 });
 
 Route::controller(EnrollmentController::class)->group(function(){
