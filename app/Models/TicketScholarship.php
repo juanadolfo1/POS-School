@@ -9,4 +9,9 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class TicketScholarship extends Model
 {
     use HasFactory, SoftDeletes;
+
+    protected $fillable = [
+        'scholarship_id',
+        'ticket_id',
+    ];
 }

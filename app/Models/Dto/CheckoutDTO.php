@@ -16,6 +16,7 @@ class CheckoutDTO
     private PaymentMethodDTO $payment_method;
     /** @var PayConceptDTO[] */
     private array $pay_concepts;
+    private ?int $scholarship_id;
 
     /**
      * @param bool $is_full_payed
@@ -41,7 +42,8 @@ class CheckoutDTO
         PaymentMethodDTO $payment_method,
         array $pay_concepts,
         int $ticket_id = null,
-        string $folio_ticket = null
+        string $folio_ticket = null,
+        ?int $scholarship_id = null
     )
     {
         $this->is_full_payed = $is_full_payed;
@@ -55,13 +57,15 @@ class CheckoutDTO
         $this->pay_concepts = $pay_concepts;
         $this->ticket_id = $ticket_id;
         $this->folio_ticket = $folio_ticket;
+        $this->scholarship_id = $scholarship_id;
     }
 
     public static function from_request($request): CheckoutDTO
     {
         $paymentMethod = new PaymentMethodDTO($request->payment_method["id"]);
+        $scholarYearId = $request->scholar_year_id;
 
-        $payConcepts = array_map(function ($concept){
+        $payConcepts = array_map(function ($concept) use ($scholarYearId) {
             $payments = array_map(function ($payment){
                 return new PaymentDTO(
                     $payment["paid_at"],
@@ -78,7 +82,7 @@ class CheckoutDTO
                 $concept["amount"],
                 $concept["last_day_with_discount"] ?? '',
                 $concept["discount"],
-                $concept["scholar_year_id"],
+                $concept["scholar_year_id"] ?? $scholarYearId,
                 $payments,
                 $concept["quantity"] ?? 1
             );
@@ -94,6 +98,9 @@ class CheckoutDTO
             $request->scholar_year_id,
             $paymentMethod,
             $payConcepts,
+            null,
+            null,
+            $request->scholarship_id ?? null,
         );
     }
 
@@ -205,5 +212,15 @@ class CheckoutDTO
     public function setPayConcepts(array $pay_concepts): void
     {
         $this->pay_concepts = $pay_concepts;
+    }
+
+    public function getScholarshipId(): ?int
+    {
+        return $this->scholarship_id;
+    }
+
+    public function setScholarshipId(?int $scholarship_id): void
+    {
+        $this->scholarship_id = $scholarship_id;
     }
 }

@@ -59,6 +59,7 @@ class DocumentRepository
             'margin_right' => 2,
             'margin_top' => 2,
             'margin_bottom' => 2,
+            'tempDir' => sys_get_temp_dir() . '/mpdf',
         ]);
 
         $ticketCliente = true;
@@ -97,6 +98,7 @@ class DocumentRepository
             'margin_right' => 5,
             'margin_top' => 5,
             'margin_bottom' => 5,
+            'tempDir' => sys_get_temp_dir() . '/mpdf',
         ]);
 
         $mpdf->WriteHTML($html);

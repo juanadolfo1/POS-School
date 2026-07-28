@@ -13,6 +13,7 @@ use App\Models\Scholarship;
 use App\Models\Student;
 use App\Models\Ticket;
 use App\Models\TicketProduct;
+use App\Models\TicketScholarship;
 use Exception;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
@@ -23,24 +24,26 @@ class PaymentRepository implements PaymentRepositoryInterface
 {
     public function get_payments_by_student_id(int $studentId, int $year): Collection
     {
-        $payments = Payment::join('cat_pay_concepts cpc', 'cpc.id', '=', 'payments.pay_concept_id')
-            ->join('student_groups sg', 'sg.id', '=', 'payments.student_group_id')
-            ->join('students s', 's.id', '=', 'sg.student_id')
-            ->where('s.id', '=', $studentId)
-            ->where('sg.schoolar_year_id', '=', $year)
+        return Payment::join('ticket_products as tp', 'tp.id', '=', 'payments.ticket_product_id')
+            ->join('cat_pay_concepts as cpc', 'cpc.id', '=', 'tp.pay_concept_id')
+            ->join('tickets as t', 't.id', '=', 'tp.ticket_id')
+            ->join('student_groups as sg', 'sg.id', '=', 't.student_group_id')
+            ->join('groups as gp', 'gp.id', '=', 'sg.group_id')
+            ->where('sg.student_id', '=', $studentId)
+            ->where('gp.scholar_year_id', '=', $year)
+            ->where('t.is_cancelled', false)
+            ->whereNull('payments.deleted_at')
             ->orderBy('payments.id', 'desc')
             ->select(
                 'payments.id',
                 'payments.is_full_payment',
-                'payments.has_discount',
-                'payments.discount_type',
-                'payments.discount',
-                'payments.received_payment',
-                'payments.created_at as payed at',
-                'cpc.name'
+                'payments.paid_amount',
+                'payments.paid_at',
+                'payments.applied_discount',
+                't.folio_ticket',
+                'cpc.label as pay_concept_name',
+                'cpc.pay_concept_type'
             )->get();
-
-        return $payments;
     }
 
     public function get_pending_payments_by_student_id(int $studentId, int $yearId, int $academicLevelId): Collection
@@ -218,6 +221,14 @@ class PaymentRepository implements PaymentRepositoryInterface
         Log::info('Se formatea la respuesta');
         $newTicket->payment_method = $paymentMethod;
         $newTicket->pay_concepts = $payConcepts;
+
+        // Guardar beca aplicada si viene en el checkout
+        if ($checkout->getScholarshipId()) {
+            TicketScholarship::create([
+                'scholarship_id' => $checkout->getScholarshipId(),
+                'ticket_id' => $newTicket->id,
+            ]);
+        }
 
         return $newTicket;
     }

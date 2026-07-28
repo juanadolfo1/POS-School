@@ -9,7 +9,7 @@ class AuditService
     /**
      * Registra una acción en el log de auditoría.
      */
-    public function log(int $userId, string $action, string $entity, ?int $entityId = null, ?array $payload = null): void
+    public function log(?int $userId, string $action, string $entity, ?int $entityId = null, ?array $payload = null): void
     {
         AuditLog::create([
             'user_id' => $userId,

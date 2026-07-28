@@ -27,7 +27,7 @@ class AuthController extends Controller
             $user = $this->authRepository->login($request);
 
             if(!$user){
-                $this->auditService->log(0, 'LOGIN_FAILED', 'auth', null, [
+                $this->auditService->log(null, 'LOGIN_FAILED', 'auth', null, [
                     'email' => $request->email,
                     'ip' => $request->ip(),
                 ]);

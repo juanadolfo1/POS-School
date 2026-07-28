@@ -24,13 +24,13 @@ class DatabaseSeeder extends Seeder
             ['id' => 2,  'module_name' => 'Tutores',        'path' => 'dashboards/tutors',        'icon' => 'pi pi-id-card',      'order' => 2,  'status' => 1, 'created_at' => now(), 'updated_at' => now()],
             ['id' => 3,  'module_name' => 'Pagos',          'path' => 'dashboards/payments',      'icon' => 'pi pi-credit-card',  'order' => 3,  'status' => 1, 'created_at' => now(), 'updated_at' => now()],
             ['id' => 4,  'module_name' => 'Documentos',     'path' => 'dashboards/documents',     'icon' => 'pi pi-file',         'order' => 4,  'status' => 1, 'created_at' => now(), 'updated_at' => now()],
-            ['id' => 5,  'module_name' => 'Cat\u00e1logos', 'path' => 'dashboards/catalogs',      'icon' => 'pi pi-cog',          'order' => 5,  'status' => 1, 'created_at' => now(), 'updated_at' => now()],
+            ['id' => 5,  'module_name' => 'Catálogos', 'path' => 'dashboards/catalogs',      'icon' => 'pi pi-cog',          'order' => 5,  'status' => 1, 'created_at' => now(), 'updated_at' => now()],
             ['id' => 6,  'module_name' => 'Usuarios',       'path' => 'dashboards/users',         'icon' => 'pi pi-user-edit',    'order' => 6,  'status' => 1, 'created_at' => now(), 'updated_at' => now()],
             ['id' => 7,  'module_name' => 'Becas',          'path' => 'dashboards/scholarships',  'icon' => 'pi pi-star',         'order' => 7,  'status' => 1, 'created_at' => now(), 'updated_at' => now()],
             ['id' => 8,  'module_name' => 'Pronto Pago',    'path' => 'dashboards/promotion-config', 'icon' => 'pi pi-percentage', 'order' => 8,  'status' => 1, 'created_at' => now(), 'updated_at' => now()],
             ['id' => 9,  'module_name' => 'Bajas',          'path' => 'dashboards/withdrawals',   'icon' => 'pi pi-user-minus',   'order' => 9,  'status' => 1, 'created_at' => now(), 'updated_at' => now()],
-            ['id' => 10, 'module_name' => 'Reinscripci\u00f3n', 'path' => 'dashboards/enrollment', 'icon' => 'pi pi-refresh',    'order' => 10, 'status' => 1, 'created_at' => now(), 'updated_at' => now()],
-            ['id' => 11, 'module_name' => 'Dashboard',      'path' => 'dashboards/home',          'icon' => 'pi pi-chart-bar',    'order' => 0,  'status' => 1, 'created_at' => now(), 'updated_at' => now()],
+            ['id' => 10, 'module_name' => 'Reinscripción', 'path' => 'dashboards/enrollment', 'icon' => 'pi pi-refresh',    'order' => 10, 'status' => 1, 'created_at' => now(), 'updated_at' => now()],
+            ['id' => 11, 'module_name' => 'Dashboard',      'path' => 'dashboards/home',          'icon' => 'pi pi-chart-bar',    'order' => 0,  'status' => 0, 'created_at' => now(), 'updated_at' => now()],
             ['id' => 12, 'module_name' => 'Resumen de pagos','path' => 'dashboards/daily-income',  'icon' => 'pi pi-money-bill',   'order' => 4,  'status' => 1, 'created_at' => now(), 'updated_at' => now()],
         ]);
 
@@ -260,5 +260,8 @@ class DatabaseSeeder extends Seeder
         DB::table('payments')->insert([
             ['id' => 3, 'is_full_payment' => 1, 'paid_amount' => 2200.00, 'paid_at' => '2025-09-08', 'applied_discount' => true, 'ticket_product_id' => 3, 'created_at' => '2025-09-08', 'updated_at' => '2025-09-08'],
         ]);
+
+        $this->call(DailyIncomeSeeder::class);
+        $this->call(DemoSeeder::class);
     }
 }
