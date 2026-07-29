@@ -126,6 +126,14 @@ class CatalogRepository implements CatalogRepositoryInterface{
         return $scholarYears;
     }
 
+    public function get_active_scholar_year(): ?ScholarYear
+    {
+        return ScholarYear::where('status', 1)
+            ->select('id', 'year', 'starts_at', 'ends_at', 'status')
+            ->orderBy('starts_at', 'desc')
+            ->first();
+    }
+
     public function create_scholar_year($data): ScholarYear
     {
         $newSchoolarYear = new ScholarYear();

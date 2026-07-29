@@ -26,11 +26,6 @@ class StudentController extends Controller
 
         try {
             $students = $this->studentRepository->get_all_students($limit, $offset, $search_text);
-            if (count($students) == 0){
-                return response()
-                        ->json(ApiResponse::notFound('Students not found', $students))
-                        ->setStatusCode(404);
-            }
             return response()
                     ->json(ApiResponse::success('Students retrieved successfully', $students))
                     ->setStatusCode(200);
@@ -67,7 +62,7 @@ class StudentController extends Controller
             Log::error('Error creating student: ' . $e->getTraceAsString());
             return response()
                     ->json(ApiResponse::internalError('Failed to create student', [$e->getMessage()]))
-                    ->setStatusCode(400);
+                    ->setStatusCode(500);
         }
 
     }
@@ -98,7 +93,7 @@ class StudentController extends Controller
             Log::error('Error updating student: ' . $e->getTraceAsString());
             return response()
                     ->json(ApiResponse::internalError('Failed to update student', [$e->getMessage()]))
-                    ->setStatusCode(400);
+                    ->setStatusCode(500);
 
         }
     }
@@ -120,9 +115,22 @@ class StudentController extends Controller
 
     }
 
+    public function get_student_groups(Request $request, int $id){
+        try {
+            $groups = $this->studentRepository->get_student_groups($id);
+            return response()->json(ApiResponse::success('Student groups retrieved', $groups))->setStatusCode(200);
+        } catch (Exception $e) {
+            return response()->json(ApiResponse::internalError('Failed to retrieve student groups', [$e->getMessage()]))->setStatusCode(500);
+        }
+    }
+
     public function assign_group(Request $request){
+        $request->validate([
+            'student_id' => 'required|exists:students,id',
+            'group_id'   => 'required|exists:groups,id',
+        ]);
         $studentId = (int) $request->student_id;
-        $groupId = (int) $request->groupId;
+        $groupId = (int) $request->group_id;
         try{
             $result = $this->studentRepository->assing_group($studentId, $groupId);
             if($result){

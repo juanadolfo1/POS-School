@@ -200,6 +200,26 @@ class PaymentRepository implements PaymentRepositoryInterface
             Log::info('Producto generado ' . json_encode($ticketProduct));
 
             foreach ($payConcept->getPayments() as $payment) {
+                // Validar que el abono no exceda el saldo pendiente
+                $alreadyPaid = Payment::join('ticket_products as tp2', 'tp2.id', '=', 'payments.ticket_product_id')
+                    ->join('tickets as t2', 't2.id', '=', 'tp2.ticket_id')
+                    ->join('student_groups as sg2', 'sg2.id', '=', 't2.student_group_id')
+                    ->where('sg2.student_id', DB::table('student_groups')->where('id', $checkout->getStudentGroupId())->value('student_id'))
+                    ->where('tp2.pay_concept_id', $payConcept->getPayConceptId())
+                    ->where('t2.is_cancelled', false)
+                    ->whereNull('payments.deleted_at')
+                    ->sum('payments.paid_amount');
+
+                $conceptAmount = $payConcept->getAmount() + ($payConcept->getDiscount() ?? 0);
+                $remaining = $conceptAmount - $alreadyPaid;
+
+                if ($payment->getPaidAmount() > $remaining + 0.01) {
+                    throw new CustomException(
+                        'El monto del abono ($' . $payment->getPaidAmount() . ') excede el saldo pendiente ($' . round($remaining, 2) . ') para ' . $payConcept->getPayConceptName(),
+                        422
+                    );
+                }
+
                 $newPayment = new Payment();
                 $newPayment->is_full_payment = $payment->isFullPayment();
                 $newPayment->paid_amount = $payment->getPaidAmount();

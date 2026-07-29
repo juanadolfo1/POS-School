@@ -23,6 +23,7 @@ interface CatalogRepositoryInterface{
 
     /** @return ScholarYear[] */
     function get_scholar_years(): array;
+    function get_active_scholar_year(): ?ScholarYear;
     function create_scholar_year($data): ScholarYear;
     function update_scholar_year($data): ScholarYear;
     function delete_scholar_year($id): ScholarYear;

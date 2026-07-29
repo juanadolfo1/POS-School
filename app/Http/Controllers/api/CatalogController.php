@@ -23,6 +23,19 @@ class CatalogController extends Controller
 
     // ========== Scholar Years ==========
 
+    public function get_active_scholar_year()
+    {
+        try {
+            $scholarYear = $this->catalogRepository->get_active_scholar_year();
+            if (!$scholarYear) {
+                return response()->json(ApiResponse::notFound('No active scholar year found', []))->setStatusCode(404);
+            }
+            return response()->json(ApiResponse::success('Active scholar year retrieved', $scholarYear))->setStatusCode(200);
+        } catch (Exception $e) {
+            return response()->json(ApiResponse::internalError('Failed to retrieve active scholar year', [$e->getMessage()]))->setStatusCode(500);
+        }
+    }
+
     public function get_scholar_years()
     {
         try {
@@ -155,9 +168,6 @@ class CatalogController extends Controller
         $academicLevelId = (int) $request->academic_level_id;
         try {
             $groups = $this->catalogRepository->get_groups($scholarYearId, $academicLevelId);
-            if(count($groups) == 0){
-                return response()->json(ApiResponse::notFound('Groups not found', $groups))->setStatusCode(404);
-            }
             return response()->json(ApiResponse::success('Groups retrieved successfully', $groups))->setStatusCode(200);
         } catch (Exception $e) {
             return response()->json(ApiResponse::internalError('Failed to retrieve groups', [$e->getMessage()]))->setStatusCode(500);

@@ -23,8 +23,10 @@ class Student extends Model
 
     public function scopeSearch($query, $searchQuery)
     {
-        // Format query with boolean operation to search using tsquery
-        $formattedQuery = str_replace(' ', ' & ', $searchQuery);
+        $formattedQuery = implode(' & ', array_filter(array_map(
+            fn($w) => strtolower(trim($w)),
+            explode(' ', $searchQuery)
+        )));
 
         return $query->whereRaw("search_text @@ to_tsquery('simple', ?)", [$formattedQuery]);
     }

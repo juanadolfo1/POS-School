@@ -60,7 +60,7 @@ class StudentRepository implements StudentRepositoryInterface{
     public function store_student($studentData): Student
     {
         $person = new Person();
-        $person->email = $studentData->email;
+        $person->email = $studentData->email ?: null;
         $person->name = $studentData->name;
         $person->first_lastname = $studentData->first_lastname;
         $person->second_lastname = $studentData->second_lastname;
@@ -112,27 +112,51 @@ class StudentRepository implements StudentRepositoryInterface{
         return $student;
     }
 
-    public function assing_group($studentId, $groupId): Student
+    public function assing_group(int $studentId, int $groupId): Student
     {
         $student = Student::find($studentId);
-        if($student){
-            $group = Group::find($groupId);
+        if (!$student) throw new Exception('Student not found');
 
-            if(!$group){
-                throw new Exception('Group not found');
-            }
+        $group = Group::find($groupId);
+        if (!$group) throw new Exception('Group not found');
 
+        // Upsert: si ya tiene grupo en el mismo ciclo escolar, lo reemplaza
+        $existing = StudentGroup::join('groups', 'student_groups.group_id', '=', 'groups.id')
+            ->where('student_groups.student_id', $studentId)
+            ->where('groups.scholar_year_id', $group->scholar_year_id)
+            ->select('student_groups.id')
+            ->first();
+
+        if ($existing) {
+            StudentGroup::where('id', $existing->id)->update(['group_id' => $groupId]);
+        } else {
             $studentGroup = new StudentGroup();
-
             $studentGroup->student_id = $student->id;
             $studentGroup->group_id = $group->id;
+            $studentGroup->status = 1;
             $studentGroup->save();
-
-        } else {
-            throw new Exception('Student not found');
         }
 
         return $student;
+    }
+
+    public function get_student_groups(int $studentId): array
+    {
+        return StudentGroup::join('groups', 'student_groups.group_id', '=', 'groups.id')
+            ->join('scholar_years', 'groups.scholar_year_id', '=', 'scholar_years.id')
+            ->join('cat_academic_levels', 'groups.academic_level_id', '=', 'cat_academic_levels.id')
+            ->where('student_groups.student_id', $studentId)
+            ->select(
+                'student_groups.id',
+                'groups.id as group_id',
+                'groups.label as group_label',
+                'groups.scholar_year_id',
+                'scholar_years.year as scholar_year',
+                'groups.academic_level_id',
+                'cat_academic_levels.label as academic_level'
+            )
+            ->orderBy('scholar_years.id', 'desc')
+            ->get()->toArray();
     }
 
     public function get_students_by_group($groupId): Collection
@@ -167,6 +191,11 @@ class StudentRepository implements StudentRepositoryInterface{
                 'people.second_lastname'
             )
             ->where('uuid', '=', $uuid)->first();
+
+        if (!$student) {
+            throw new Exception('Student not found');
+        }
+
         $academicLevel = StudentGroup::join('groups', 'student_groups.group_id', '=', 'groups.id')
             ->join('cat_academic_levels', 'groups.academic_level_id', '=', 'cat_academic_levels.id')
             ->join('scholar_years', 'groups.scholar_year_id', '=', 'scholar_years.id')
@@ -177,8 +206,8 @@ class StudentRepository implements StudentRepositoryInterface{
             ])
             ->select('groups.academic_level_id', 'scholar_years.id as scholar_year_id')->first();
 
-        $student->academic_level_id = $academicLevel->academic_level_id ?? 0;
-        $student->scholar_year_id = $academicLevel->scholar_year_id ?? 0;
+        $student->academic_level_id = $academicLevel?->academic_level_id ?? 0;
+        $student->scholar_year_id = $academicLevel?->scholar_year_id ?? 0;
         return $student;
     }
 }

@@ -22,7 +22,7 @@ class JWTValidation
 
     public function handle(Request $request, Closure $next): Response
     {
-        $token = $request->bearerToken();
+        $token = $request->bearerToken() ?? $request->query('token');
 
         if(!$token){
             return response()

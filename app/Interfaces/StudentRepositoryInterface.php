@@ -14,5 +14,6 @@ interface StudentRepositoryInterface{
     function update_student($studentData): Student;
     function delete_student(int $id): Student;
     function assing_group(int $studentId, int $groupId): Student;
+    function get_student_groups(int $studentId): array;
     function get_students_by_group(int $groupId): Collection;
 }

@@ -61,6 +61,7 @@ class DatabaseSeeder extends Seeder
             ['id' => 17, 'operation_name' => 'Ver',      'module_id' => 6, 'created_at' => now(), 'updated_at' => now()],
             ['id' => 18, 'operation_name' => 'Crear',    'module_id' => 6, 'created_at' => now(), 'updated_at' => now()],
             ['id' => 19, 'operation_name' => 'Editar',   'module_id' => 6, 'created_at' => now(), 'updated_at' => now()],
+            ['id' => 36, 'operation_name' => 'Eliminar', 'module_id' => 6, 'created_at' => now(), 'updated_at' => now()],
             // Becas (module 7)
             ['id' => 20, 'operation_name' => 'Ver',      'module_id' => 7, 'created_at' => now(), 'updated_at' => now()],
             ['id' => 21, 'operation_name' => 'Crear',    'module_id' => 7, 'created_at' => now(), 'updated_at' => now()],
@@ -87,7 +88,7 @@ class DatabaseSeeder extends Seeder
 
         // ========== ROLE_OPERATIONS ==========
         // Administrador → TODO
-        $adminOps = range(1, 35);
+        $adminOps = array_merge(range(1, 35), [36]);
         foreach ($adminOps as $opId) {
             DB::table('role_operations')->insert(['role_id' => 1, 'operation_id' => $opId, 'created_at' => now(), 'updated_at' => now()]);
         }

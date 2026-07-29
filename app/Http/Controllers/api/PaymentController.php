@@ -7,6 +7,7 @@ use App\Interfaces\PaymentRepositoryInterface;
 use App\Models\ApiResponse;
 use App\Models\CustomException;
 use App\Models\Dto\CheckoutDTO;
+use App\Services\AuditService;
 use App\Services\PromotionService;
 use DateTime;
 use Exception;
@@ -17,10 +18,12 @@ class PaymentController extends Controller
 {
     protected PaymentRepositoryInterface $repository;
     protected PromotionService $promotionService;
+    protected AuditService $auditService;
 
-    public function __construct(PaymentRepositoryInterface $paymentRepository, PromotionService $promotionService){
+    public function __construct(PaymentRepositoryInterface $paymentRepository, PromotionService $promotionService, AuditService $auditService){
         $this->repository = $paymentRepository;
         $this->promotionService = $promotionService;
+        $this->auditService = $auditService;
     }
 
     public function get_payments_by_student_id(Request $request){
@@ -121,6 +124,13 @@ class PaymentController extends Controller
         try {
             $newPayment = $this->repository->save_payment($payment);
             DB::commit();
+            $this->auditService->log(
+                $request->auth_user_id ?? null,
+                'PAYMENT_CREATED',
+                'ticket',
+                $newPayment->id,
+                ['folio' => $newPayment->folio_ticket, 'amount' => $newPayment->amount]
+            );
             return response()
                     ->json(ApiResponse::success('Payment saved successfully', $newPayment))
                     ->setStatusCode(201);

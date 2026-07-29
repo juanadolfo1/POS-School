@@ -37,6 +37,7 @@ class QrRepository implements QrRepositoryInterface
             'margin_right' => 0,
             'margin_top' => 0,
             'margin_bottom' => 0,
+            'tempDir' => env('MPDF_TEMP_DIR', storage_path('app/mpdf')),
         ]);
 
         $mpdf->WriteHTML($content);

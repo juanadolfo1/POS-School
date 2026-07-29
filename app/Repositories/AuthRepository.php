@@ -222,8 +222,6 @@ class AuthRepository implements AuthRepositoryInterface{
         Log::info($decodedPayload);
         $decodedPayload = json_decode($decodedPayload);
 
-        $isValidToRefresh = abs($decodedPayload->exp - $now) < $this->validTime;
-
         $user = User::find($decodedPayload->sub);
         if(!$user){
             throw new Exception('User not found', 404);

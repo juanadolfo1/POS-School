@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\ApiResponse;
 use App\Models\CustomException;
 use App\Models\GradePromotion;
+use App\Services\AuditService;
 use App\Services\EnrollmentService;
 use Exception;
 use Illuminate\Http\Request;
@@ -14,10 +15,12 @@ use Illuminate\Support\Facades\DB;
 class EnrollmentController extends Controller
 {
     private EnrollmentService $service;
+    private AuditService $auditService;
 
-    public function __construct(EnrollmentService $service)
+    public function __construct(EnrollmentService $service, AuditService $auditService)
     {
         $this->service = $service;
+        $this->auditService = $auditService;
     }
 
     /**
@@ -68,6 +71,13 @@ class EnrollmentController extends Controller
             );
 
             DB::commit();
+            $this->auditService->log(
+                $request->auth_user_id ?? null,
+                'ENROLLMENT_BATCH',
+                'enrollment_processes',
+                $result['process_id'] ?? null,
+                ['from' => $request->from_scholar_year_id, 'to' => $request->to_scholar_year_id, 'level' => $request->academic_level_id]
+            );
             return response()
                 ->json(ApiResponse::success('Enrollment process completed', $result))
                 ->setStatusCode(201);

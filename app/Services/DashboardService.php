@@ -192,15 +192,16 @@ class DashboardService
         $statement = $concepts->map(function ($concept) use ($payments, &$totalDue, &$totalPaid) {
             $conceptPayments = $payments->where('pay_concept_id', $concept->id);
             $paidAmount = $conceptPayments->sum('paid_amount');
+            $hasFullPayment = $conceptPayments->contains('is_full_payment', true);
             $status = 'pending';
 
-            if ($paidAmount >= $concept->amount) {
+            if ($hasFullPayment || $paidAmount >= $concept->amount) {
                 $status = 'paid';
             } elseif ($paidAmount > 0) {
                 $status = 'partial';
             }
 
-            $totalDue += $concept->amount;
+            $totalDue += $hasFullPayment ? $paidAmount : $concept->amount;
             $totalPaid += $paidAmount;
 
             return [
@@ -210,7 +211,7 @@ class DashboardService
                 'discount_amount' => round((float) $concept->discount_amount, 2),
                 'last_day_with_discount' => $concept->last_day_with_discount,
                 'paid_amount' => round((float) $paidAmount, 2),
-                'balance' => round((float) ($concept->amount - $paidAmount), 2),
+                'balance' => $hasFullPayment ? 0.0 : round((float) ($concept->amount - $paidAmount), 2),
                 'status' => $status,
                 'payments' => $conceptPayments->map(function ($p) {
                     return [

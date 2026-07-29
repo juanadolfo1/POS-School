@@ -40,6 +40,8 @@ Route::controller(StudentController::class)->group(function(){
     Route::put($path, 'update')->middleware([JWTValidation::class, 'permission:Alumnos,Editar']);
     Route::delete($path . '/{id}', 'delete')->middleware([JWTValidation::class, 'permission:Alumnos,Eliminar']);
     Route::get($path . '/by-group/{groupId}', 'get_students_by_group')->middleware(JWTValidation::class);
+    Route::get($path . '/{id}/groups', 'get_student_groups')->middleware(JWTValidation::class);
+    Route::post($path . '/assign-group', 'assign_group')->middleware([JWTValidation::class, 'permission:Alumnos,Crear']);
 });
 
 Route::controller(TutorController::class)->group(function(){
@@ -56,6 +58,7 @@ Route::controller(CatalogController::class)->group(function(){
     $path = '/catalog';
 
     $scholarYearPath = '/scholar-years';
+    Route::get($path . $scholarYearPath . '/active', 'get_active_scholar_year')->middleware(JWTValidation::class);
     Route::get($path . $scholarYearPath, 'get_scholar_years')->middleware(JWTValidation::class);
     Route::post($path . $scholarYearPath, 'create_scholar_year')->middleware([JWTValidation::class, 'permission:Catálogos,Crear']);
     Route::put($path . $scholarYearPath, 'update_scholar_year')->middleware([JWTValidation::class, 'permission:Catálogos,Editar']);
@@ -108,9 +111,9 @@ Route::controller(QrController::class)->group(function(){
 
 Route::controller(DocumentController::class)->group(function(){
     $documentPath = '/documents';
-    Route::get($documentPath . '/get-ticket/{folioTicket}', 'get_ticket');
-    Route::get($documentPath . '/close-ticket/{selectedDay}', 'close_ticket');
-    Route::get($documentPath . '/get-pending-payments-report', 'get_pending_payments_report');
+    Route::get($documentPath . '/get-ticket/{folioTicket}', 'get_ticket')->middleware(JWTValidation::class);
+    Route::get($documentPath . '/close-ticket/{selectedDay}', 'close_ticket')->middleware(JWTValidation::class);
+    Route::get($documentPath . '/get-pending-payments-report', 'get_pending_payments_report')->middleware(JWTValidation::class);
 });
 
 Route::controller(DashboardController::class)->group(function(){
@@ -123,7 +126,7 @@ Route::controller(UserController::class)->group(function(){
     Route::get('/users', 'index')->middleware(JWTValidation::class);
     Route::post('/users', 'store')->middleware([JWTValidation::class, 'permission:Usuarios,Crear']);
     Route::put('/users', 'update')->middleware([JWTValidation::class, 'permission:Usuarios,Editar']);
-    Route::delete('/users/{id}', 'delete')->middleware([JWTValidation::class, 'permission:Usuarios,Editar']);
+    Route::delete('/users/{id}', 'delete')->middleware([JWTValidation::class, 'permission:Usuarios,Eliminar']);
     Route::get('/roles', 'get_roles')->middleware(JWTValidation::class);
 });
 
